@@ -1,113 +1,127 @@
-import Image from 'next/image'
+"use client";
 
-export default function Home() {
+import { DataTable } from "@/components/data-table";
+import { Columns } from "@/components/columns";
+
+import { Transaction } from "@/lib/schema";
+import { useState } from "react";
+import { Loader } from "lucide-react";
+import dataFetcher from "@/helpers/transactions";
+import useSWR from "swr";
+
+type SourceDescription = {
+  description: string;
+};
+
+type DestinationDescription = {
+  description: string;
+};
+
+type FilteredData = {
+  activity_id: string;
+  date: string;
+  type: string;
+  method?: string;
+  amount: number;
+  balance: number;
+  source: SourceDescription;
+  destination: DestinationDescription;
+};
+
+// Function to calculate the total balance
+function calculateTotalBalance(data: Transaction[]) {
+  let totalBalance = 0;
+
+  for (const activity of data) {
+    totalBalance += activity.amount;
+  }
+
+  return totalBalance;
+}
+
+const Ledger = () => {
+  // State to control the balance display on the client
+  const [displayBalance, setDisplayBalance] = useState(false);
+
+  // Simulate a db read
+  const { data } = useSWR("json", dataFetcher);
+
+  // Filter the accessor keys (columns to be displayed in the table) and put them in a new array
+  const filteredData = data?.transactions?.map((item: FilteredData) => {
+    const {
+      activity_id,
+      date,
+      type,
+      method,
+      amount,
+      balance,
+      source: { description: sourceDescription },
+      destination: { description: destinationDescription },
+    } = item;
+
+    // Convert the incoming timestamp into a more human readable string
+    const timestamp = new Date(date).toUTCString();
+
+    return {
+      txID: activity_id,
+      timestamp,
+      type,
+      method,
+      amount,
+      balance,
+      source: sourceDescription,
+      destination: destinationDescription,
+    };
+  });
+
+  // Create an array with no duplicate transaction IDs
+  const uniqueArray: Transaction[] = Array.from(
+    new Set(filteredData?.map((obj: Transaction) => obj.txID))
+  ).map((activityId) => {
+    return filteredData.find((obj: Transaction) => obj.txID === activityId);
+  });
+
+  // Incase one needs to sort the array in descending order
+  // uniqueArray.sort((a, b) => b.txID - a.txID);
+
+  // Call a designated function with the unique data as an argument
+  const totalBalance = calculateTotalBalance(uniqueArray);
+
+  // Delay the display of balance by 1s to mimic a server data fetch
+  setTimeout(() => {
+    setDisplayBalance(true);
+  }, 1000);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className='container grid items-center py-5 mt-9'>
+      <div className='flex justify-between text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-zinc-700/50 rounded-lg'>
+        <div className='justify-center p-5'>
+          <p className='text-3xl font-extrabold'>
+            {displayBalance ? (
+              `$${totalBalance}`
+            ) : (
+              <Loader className='h-9 w-9 animate-spin' />
+            )}
+          </p>
+
+          <p className='text-xl'>Balance</p>
+        </div>
+
+        <div className='flex p-5'>
+          <p className='text-3xl font-extrabold text-right self-start'>
+            Investing Account
+          </p>
         </div>
       </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className='p-2 mt-9'>
+        <h2 className='text-xl font-bold'>Your Transactions</h2>
       </div>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      {/* Render the Data Table */}
+      <DataTable data={uniqueArray} columns={Columns} />
     </main>
-  )
-}
+  );
+};
+
+export default Ledger;
