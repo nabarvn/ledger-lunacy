@@ -1,6 +1,6 @@
 # Ledger Lunacy
 
-A clean UI for a bank account ledger that investors can use to invest in startups and keep track of all transactions.
+A clean UI for an investing account ledger that investors can use to invest in startups and keep track of all transactions.
 
 ## Tech Stack:
 
