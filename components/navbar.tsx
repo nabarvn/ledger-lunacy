@@ -22,7 +22,7 @@ const Navbar = () => {
             <Button
               variant='ghost'
               size='sm'
-              className='w-9 px-0 hover:bg-transparent focus:ring-0 sm:hidden mt-1'
+              className='w-9 px-0 hover:bg-transparent focus:ring-0 sm:hidden'
             >
               <Menu className='h-7 w-7' aria-hidden='true' />
               <span className='sr-only'>Open menu</span>
