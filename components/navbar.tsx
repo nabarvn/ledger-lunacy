@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import Link from "next/link";
 
 import {
   DropdownMenu,
@@ -12,8 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
-  const pathname = usePathname();
-
   return (
     <header className='sticky top-0 z-40 w-full bg-background shadow-md dark:shadow-none dark:border-b-2 dark:shadow-orange-200'>
       <div className='container flex h-16 items-center'>
