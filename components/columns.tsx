@@ -63,16 +63,11 @@ export const Columns: ColumnDef<Transaction>[] = [
     // Column for timestamp
     accessorKey: "timestamp",
     // Column header formatting
-    header: ({ column }) => {
-      return (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className='hover:text-accent-foreground'
-        >
-          Timestamp
-        </button>
-      );
-    },
+    header: "Timestamp",
+    // Disable column filter for this column
+    enableColumnFilter: false,
+    // Disable sorting for this column
+    enableSorting: false,
   },
   {
     // Column for method
